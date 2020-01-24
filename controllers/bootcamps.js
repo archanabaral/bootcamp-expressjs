@@ -6,17 +6,50 @@ exports.getBootcamps = async (req, res, next) => {
   try {
     //console.log(req.query)
     let query;
-    let queryStr = JSON.stringify(req.query);
+
+    //copy req.query
+    const reqQuery = { ...req.query };
+
+    //Array of fields to exclude that i dont want to be matched for filtering
+    const removeFields = ["select",'sort'];
+
+    //loop over removeFields and delete them from reqQuery
+    removeFields.forEach(value => delete reqQuery[value]);
+
+    console.log(reqQuery);
+
+    //create query string
+    let queryStr = JSON.stringify(reqQuery);
+
+    //create operators (&gt,&gte,etc)
     queryStr = queryStr.replace(
       /\b(gt|gte|lt|lte|in)\b/g,
       match => `$${match}`
     );
 
     console.log(queryStr);
-    query=bootcamps.find(JSON.parse(queryStr));
+
+    //finding resource
+    query = bootcamps.find(JSON.parse(queryStr));
+
+    //if select fields is included then do this
+    if (req.query.select) {
+      const fields = req.query.select.split(",").join(" ");
+      //console.log(fields);
+      query = query.select(fields);
+    }
+    //Sort
+    if (req.query.sort) {
+      const sortBy = req.query.sort.split(",").join(" "); query = query.sort(sortBy);
+    } else {
+      query = query.sort("-createdAt");
+    }
 
     //const bootcamp = await bootcamps.find();
-    const bootcamp=await query;
+
+    //executing query
+    const bootcamp = await query;
+
     res.status(200).json({
       success: true,
       count: bootcamp.length,
