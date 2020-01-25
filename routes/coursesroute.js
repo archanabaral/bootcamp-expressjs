@@ -7,6 +7,10 @@ router
   .route("/")
   .get(CoursesController.getCourses)
   .post(CoursesController.createCourse);
-router.route("/:id").get(CoursesController.getCourse);
+router
+  .route("/:id")
+  .get(CoursesController.getCourse)
+  .put(CoursesController.updateCourse)
+  .delete(CoursesController.deleteCourse);
 
 module.exports = router;
