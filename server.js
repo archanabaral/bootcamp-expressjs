@@ -11,13 +11,15 @@ connectDB();
 
 //Route files
 const bootcamps = require("./routes/bootcampsroute");
+const courses = require("./routes/coursesroute");
 
 const app = express();
 //Body parser
 app.use(express.json());
 
 //MOUNT ROUTERS
-app.use("/api/v1/bootcamps", bootcamps); //connecting '/api/v1/bootcamps' to bootcamps
+app.use("/api/v1/bootcamps", bootcamps);
+app.use("/api/v1/courses", courses); //connecting '/api/v1/bootcamps' to bootcamps
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
