@@ -89,6 +89,9 @@ const BootcampSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   }
+},{
+  toJSON:{virtuals:true},
+  toObject:{virtuals:true}
 });
 //create bootcamp slug from the name
 BootcampSchema.pre("save", function(next) {
@@ -114,4 +117,20 @@ BootcampSchema.pre("save", async function(next) {
   next();
 });
 
+//if we delete bootcamp all of the cascaded courses also be deleted
+BootcampSchema.pre('remove',async function(next){
+  console.log(`courses being removed from bootcamp ${this._id}`)
+   await this.model('Course').deleteMany({bootcamp:this._id})// (to make sure that we only delete courses that are the part of the bootcamp being removed so  we do bootcamp:this._id since in course model bootcamp is of type objectId (yedi maile haleko id course document ma vako bootcamp id sanga match vayo vane tyo specific course pani delete hunxa))
+   next();
+});
+
+
+
+//Reverse populate wirh virtuals
+BootcampSchema.virtual('courses',{
+  ref:'Course',
+  localField:'_id',
+  foreignField:'bootcamp',
+  justOne:false
+});//1st arugmrnt is the field we want to add as virtual 2nd argument consists of several options like localfield of courses foreignfield in courses
 module.exports = mongoose.model("Bootcamp", BootcampSchema);

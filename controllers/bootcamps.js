@@ -30,7 +30,7 @@ exports.getBootcamps = async (req, res, next) => {
     console.log(queryStr);
 
     //finding resource
-    query = bootcamps.find(JSON.parse(queryStr));
+    query = bootcamps.find(JSON.parse(queryStr)).populate('courses');
 
     //if select fields is included then do this
     if (req.query.select) {
@@ -81,10 +81,7 @@ exports.getBootcamps = async (req, res, next) => {
       data: bootcamp
     });
   } catch (err) {
-    res.status(400).json({
-      success: false,
-      message: err
-    });
+    next(err);
   }
 };
 exports.getBootcamp = async (req, res, next) => {
@@ -107,9 +104,10 @@ exports.getBootcamp = async (req, res, next) => {
     //   success: false,
     //   message: err
     // });
-    next(
-      new ErrorResponse(`bootcamp not found with id of ${req.params.id}`, 404)
-    );
+    // next(
+    //   new ErrorResponse(`bootcamp not found with id of ${req.params.id}`, 404)
+    // );
+    next(err);
   }
 };
 exports.CreateBootcamps = async (req, res, next) => {
@@ -120,10 +118,7 @@ exports.CreateBootcamps = async (req, res, next) => {
       data: bootcamp
     });
   } catch (err) {
-    res.status(400).json({
-      success: false,
-      message: err
-    });
+    next(err);
     console.log(err);
   }
 };
@@ -145,29 +140,24 @@ exports.UpdateBootcamps = async (req, res, next) => {
       data: bootcamp
     });
   } catch (err) {
-    res.status(400).json({
-      success: false,
-      message: err
-    });
+    next(err);
   }
 };
 exports.DeleteBootcamps = async (req, res, next) => {
   try {
-    const bootcamp = await bootcamps.findByIdAndDelete(req.params.id);
+    const bootcamp = await bootcamps.findById(req.params.id);
 
     if (!bootcamp) {
       return res.status(400).json({ success: false });
     }
+    bootcamp.remove();
 
     res.status(200).json({
       success: true,
       data: {}
     });
   } catch (err) {
-    res.status(400).json({
-      success: false,
-      message: err
-    });
+    next(err);
   }
 };
 
@@ -195,10 +185,6 @@ exports.getBootcampsInRadius = async (req, res, next) => {
       data: bootcamp
     });
   } catch (err) {
-    res.status(400).json({
-      success: false,
-      message: err
-    });
-    console.log(err);
+    next(err);
   }
 };
