@@ -1,5 +1,7 @@
+const path=require('path');
 const express = require("express");
 const dotenv = require("dotenv");
+const fileupload=require('express-fileupload');
 const errorHandler = require("./middleware/error");
 const connectDB = require("./config/db");
 
@@ -17,6 +19,11 @@ const app = express();
 //Body parser
 app.use(express.json());
 
+//FILE UPLODING
+app.use(fileupload());
+
+//set static folder
+app.use(express.static(path.join(__dirname,'public')));
 //MOUNT ROUTERS
 app.use("/api/v1/bootcamps", bootcamps);
 app.use("/api/v1/courses", courses); //connecting '/api/v1/bootcamps' to bootcamps

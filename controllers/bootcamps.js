@@ -1,85 +1,86 @@
+const path = require("path");
 const ErrorResponse = require("../utils/errorResponse");
 const geocoder = require("../utils/geocoder");
 const bootcamps = require("../models/bootcampmodels");
 
 exports.getBootcamps = async (req, res, next) => {
-  try {
-    //console.log(req.query)
-    let query;
+   try {
+  //   //console.log(req.query)
+  //   let query;
 
-    //copy req.query
-    const reqQuery = { ...req.query };
+  //   //copy req.query
+  //   const reqQuery = { ...req.query };
 
-    //Array of fields to exclude that i dont want to be matched for filtering i.e if we donot exclude sort,select then it will think them as a field and try to match it with the fields that are in our document
-    const removeFields = ["select", "sort", "page", "limit"];
+  //   //Array of fields to exclude that i dont want to be matched for filtering i.e if we donot exclude sort,select then it will think them as a field and try to match it with the fields that are in our document
+  //   const removeFields = ["select", "sort", "page", "limit"];
 
-    //loop over removeFields and delete them from reqQuery
-    removeFields.forEach(value => delete reqQuery[value]);
+  //   //loop over removeFields and delete them from reqQuery
+  //   removeFields.forEach(value => delete reqQuery[value]);
 
-    console.log(reqQuery);
+  //   console.log(reqQuery);
 
-    //create query string
-    let queryStr = JSON.stringify(reqQuery);
+  //   //create query string
+  //   let queryStr = JSON.stringify(reqQuery);
 
-    //create operators (&gt,&gte,etc)
-    queryStr = queryStr.replace(
-      /\b(gt|gte|lt|lte|in)\b/g,
-      match => `$${match}`
-    );
+  //   //create operators (&gt,&gte,etc)
+  //   queryStr = queryStr.replace(
+  //     /\b(gt|gte|lt|lte|in)\b/g,
+  //     match => `$${match}`
+  //   );
 
-    console.log(queryStr);
+  //   console.log(queryStr);
 
-    //finding resource
-    query = bootcamps.find(JSON.parse(queryStr)).populate('courses');
+  //   //finding resource
+  //   query = bootcamps.find(JSON.parse(queryStr)).populate("courses");
 
-    //if select fields is included then do this
-    if (req.query.select) {
-      const fields = req.query.select.split(",").join(" ");
-      //console.log(fields);
-      query = query.select(fields);
-    }
-    //Sort
-    if (req.query.sort) {
-      const sortBy = req.query.sort.split(",").join(" ");
-      query = query.sort(sortBy);
-    } else {
-      query = query.sort("-createdAt");
-    }
-    //pagination
-    const page = parseInt(req.query.page, 10) || 1;
-    const limit = parseInt(req.query.limit, 10) || 25;
-    const skip = (page - 1) * limit;
-    const endIndex = page * limit;
-    const total = await bootcamps.countDocuments();
+  //   //if select fields is included then do this
+  //   if (req.query.select) {
+  //     const fields = req.query.select.split(",").join(" ");
+  //     //console.log(fields);
+  //     query = query.select(fields);
+  //   }
+  //   //Sort
+  //   if (req.query.sort) {
+  //     const sortBy = req.query.sort.split(",").join(" ");
+  //     query = query.sort(sortBy);
+  //   } else {
+  //     query = query.sort("-createdAt");
+  //   }
+  //   //pagination
+  //   const page = parseInt(req.query.page, 10) || 1;
+  //   const limit = parseInt(req.query.limit, 10) || 25;
+  //   const skip = (page - 1) * limit;
+  //   const endIndex = page * limit;
+  //   const total = await bootcamps.countDocuments();
 
-    query = query.skip(skip).limit(limit);
+  //   query = query.skip(skip).limit(limit);
 
-    //const bootcamp = await bootcamps.find();
+  //   //const bootcamp = await bootcamps.find();
 
-    //executing query
-    const bootcamp = await query;
+  //   //executing query
+  //   const bootcamp = await query;
 
-    //pagination results
-    const pagination = {};
-    if (endIndex < total) {
-      pagination.next = {
-        page: page + 1,
-        limit: limit
-      };
-    }
-    if (skip > 0) {
-      pagination.prev = {
-        page: page - 1,
-        limit
-      };
-    }
-    console.log(pagination);
-    res.status(200).json({
-      success: true,
-      count: bootcamp.length,
-      pagination,
-      data: bootcamp
-    });
+  //   //pagination results
+  //   const pagination = {};
+  //   if (endIndex < total) {
+  //     pagination.next = {
+  //       page: page + 1,
+  //       limit: limit
+  //     };
+  //   }
+  //   if (skip > 0) {
+  //     pagination.prev = {
+  //       page: page - 1,
+  //       limit
+  //     };
+  //   }
+  //   console.log(pagination);
+    res.status(200).json(res.advancedResults);
+      // success: true,
+      // count: bootcamp.length,
+      // pagination,
+      // data: bootcamp
+    
   } catch (err) {
     next(err);
   }
@@ -183,6 +184,50 @@ exports.getBootcampsInRadius = async (req, res, next) => {
       success: true,
       count: bootcamp.length,
       data: bootcamp
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+//route PUT/api/v1/bootcamps/:id/photo
+exports.bootcampPhotoUpload = async (req, res, next) => {
+  try {
+    const bootcamp = await bootcamps.findById(req.params.id);
+
+    if (!bootcamp) {
+      return res.status(400).json({ success: false });
+    }
+    if (!req.files) {
+      return next(new ErrorResponse(`please upload a file`, 400));
+    }
+    //console.log(req.files.file);
+    const file = req.files.file;
+    //Make sure that image is a file
+    if (!file.mimetype.startsWith("image")) {
+      return next(new ErrorResponse(`please upload an image file`, 400));
+    }
+    //Check file size
+    if (file.size > process.env.MAX_FILE_UPLOAD) {
+      return next(
+        new ErrorResponse(
+          `please upload an image less than ${process.env.MAX_FILE_UPLOAD}`,
+          400
+        )
+      );
+    }
+    //Create custom filename
+    file.name = `photo_${bootcamp._id}${path.parse(file.name).ext}`;
+    file.mv(`${process.env.FILE_UPLOAD_PATH}/${file.name}`, async err => {
+      if (err) {
+        console.log(err);
+        return next(new ErrorResponse(`problem with file upload `, 500));
+      }
+      await bootcamps.findByIdAndUpdate(req.params.id, { photo: file.name });
+    });
+    // console.log(file.name);
+    res.status(200).json({
+      success: true,
+      data: file.name
     });
   } catch (err) {
     next(err);
