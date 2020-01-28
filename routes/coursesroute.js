@@ -5,7 +5,7 @@ const advancedResults = require("../middleware/advancedResults");
 
 const router = express.Router({ mergeParams: true }); //for merging that incoming params to base route i.e :bootcampId/courses to /
 
-const { protect } = require("../middleware/auth");
+const { protect,authorize } = require("../middleware/auth");
 
 router
   .route("/")
@@ -13,11 +13,11 @@ router
     advancedResults(Course, { path: "bootcamp", select: "name description" }),
     CoursesController.getCourses
   )
-  .post(protect, CoursesController.createCourse);
+  .post(protect,authorize('publisher','admin') , CoursesController.createCourse);
 router
   .route("/:id")
   .get(CoursesController.getCourse)
-  .put(protect, CoursesController.updateCourse)
-  .delete(protect, CoursesController.deleteCourse);
+  .put(protect,authorize('publisher','admin') , CoursesController.updateCourse)
+  .delete(protect,authorize('publisher','admin') , CoursesController.deleteCourse);
 
 module.exports = router;
