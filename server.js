@@ -1,7 +1,8 @@
-const path=require('path');
+const path = require("path");
 const express = require("express");
 const dotenv = require("dotenv");
-const fileupload=require('express-fileupload');
+const fileupload = require("express-fileupload");
+const cookieParser = require("cookie-parser");
 const errorHandler = require("./middleware/error");
 const connectDB = require("./config/db");
 
@@ -14,21 +15,25 @@ connectDB();
 //Route files
 const bootcamps = require("./routes/bootcampsroute");
 const courses = require("./routes/coursesroute");
-const auth=require("./routes/auth");
+const auth = require("./routes/auth");
 
 const app = express();
+
 //Body parser
 app.use(express.json());
+
+//cookie parser
+app.use(cookieParser());
 
 //FILE UPLODING
 app.use(fileupload());
 
 //set static folder
-app.use(express.static(path.join(__dirname,'public')));
+app.use(express.static(path.join(__dirname, "public")));
 //MOUNT ROUTERS
 app.use("/api/v1/bootcamps", bootcamps);
 app.use("/api/v1/courses", courses); //connecting '/api/v1/bootcamps' to bootcamps
-app.use("/api/v1/auth",auth);
+app.use("/api/v1/auth", auth);
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
