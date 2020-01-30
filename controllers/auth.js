@@ -45,6 +45,48 @@ exports.login = async (req, res, next) => {
     console.log(err);
   }
 };
+
+//Get current logged in user
+//route POST/api/v1/auth/me
+exports.getMe = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user.id); //we have access to req.user(which is always gonna be the loggedin user) because we are using protect route
+    res.status(200).json({
+      success: true,
+      data: user
+    });
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+//route POST/api/v1/auth/forgetpassword
+exports.forgetPassword = async (req, res, next) => {
+  try {
+    const user = await User.findOne({ email: req.body.email });
+    console.log(user);
+    if (!user) {
+      return next(
+        new ErrorResponse(
+          `There is no user with this email ${req.body.email}`,
+          404
+        )
+      );
+    }
+    //Get reset token
+    const resetToken = user.getResetPasswordToken();
+    console.log(resetToken);
+    await user.save({validateBeforeSave:false});
+
+    res.status(200).json({
+      success: true,
+      data: user
+    });
+  } catch (err) {
+    console.log(err);
+  }
+};
+
 //Get token from model,create cookie and send response
 const sendTokenResponse = (user, statusCode, res) => {
   const token = user.getSignedJwtToken(); //static(User) would be called on the model itself but method will be called on each user created i.e user
@@ -61,19 +103,4 @@ const sendTokenResponse = (user, statusCode, res) => {
       success: true,
       token
     });
-};
-
-//Get current logged in user
-//route POST/api/v1/auth/me
-
-exports.getMe = async (req, res, next) => {
-  try {
-    const user = await User.findById(req.user.id); //we have access to req.user(which is always gonna be the loggedin user) because we are using protect route
-    res.status(200).json({
-      success: true,
-      data: user
-    });
-  } catch (err) {
-    console.log(err);
-  }
 };
