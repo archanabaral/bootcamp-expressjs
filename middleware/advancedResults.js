@@ -28,7 +28,7 @@ const advancedResults = (model, populate) => async (req, res, next) => {
   //if select fields is included then do this
   if (req.query.select) {
     const fields = req.query.select.split(",").join(" ");
-    //console.log(fields);
+    console.log(fields);
     query = query.select(fields);
   }
   //Sort
