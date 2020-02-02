@@ -62,6 +62,47 @@ exports.getMe = async (req, res, next) => {
     console.log(err);
   }
 };
+//update user details
+//route PUT/api/v1/auth/updatedetails
+exports.updateDetails = async (req, res, next) => {
+  try {
+    const fieldsToUpdate = {
+      name: req.body.name,
+      email: req.body.email
+    };
+    const updatedetails = await User.findByIdAndUpdate(
+      req.user.id,
+      fieldsToUpdate,
+      {
+        new: true,
+        runValidators: true
+      }
+    );
+    res.status(200).json({
+      success: true,
+      data: updatedetails
+    });
+  } catch (err) {
+    console.log(err);
+  }
+};
+//Update password
+//PUT/api/v1/auth/updatepassword
+exports.updatePassword = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user.id).select('+password'); 
+    //check current password
+    if(!(await user.matchPassword(req.body.currentPassword) )){
+       return next(new ErrorResponse('password is incorrect',401));
+    }
+    user.password=req.body.newPassword;
+    await user.save();
+
+    sendTokenResponse(user,200,res);
+  } catch (err) {
+    console.log(err);
+  }
+};
 
 //route POST/api/v1/auth/forgetpassword
 exports.forgetPassword = async (req, res, next) => {
@@ -123,7 +164,7 @@ exports.resetPassword = asyncHandler(async (req, res, next) => {
     .digest("hex");
 
   const user = await User.findOne({
-    resetPasswordToken:resetPasswordToken,
+    resetPasswordToken: resetPasswordToken,
     resetPasswordExpire: { $gt: Date.now() }
   });
   if (!user) {
@@ -131,11 +172,10 @@ exports.resetPassword = asyncHandler(async (req, res, next) => {
   }
   //Set new password
   user.password = req.body.password;
-  user.resetPasswordToken = undefined, user.resetPasswordExpire = undefined;
+  (user.resetPasswordToken = undefined), (user.resetPasswordExpire = undefined);
   await user.save();
 
-  sendTokenResponse(user,200,res);
- 
+  sendTokenResponse(user, 200, res);
 });
 
 //Get token from model,create cookie and send response
