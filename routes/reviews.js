@@ -2,7 +2,8 @@ const express = require("express");
 const {
   getReviews,
   getReview,
-  createReview
+  createReview,
+  afterIndex
 } = require("../controllers/reviews");
 const Review = require("../models/reviewmodels");
 
@@ -16,7 +17,7 @@ router
     advancedResults(Review, { path: "bootcamp", select: "name description" }),
     getReviews
   )
-  .post(protect, authorize("user", "admin"), createReview);
+  .post(protect, authorize("user", "admin"),createReview);
 
 router.route("/:id").get(getReview);
 
