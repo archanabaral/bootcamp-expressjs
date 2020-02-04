@@ -5,9 +5,9 @@ const User = require("../models/usermodels");
 
 //protect routes
 exports.protect = asyncHandler(async (req, res, next) => {
-  console.log(req);
+  //console.log(req);
   let token;
-  console.log(req.headers.authorization);
+ // console.log(req.headers.authorization);
 
   if (
     req.headers.authorization &&

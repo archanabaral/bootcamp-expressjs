@@ -1,8 +1,9 @@
 const express = require("express");
 const CoursesController = require("../controllers/courses");
 const Course = require("../models/coursemodels");
-
-const router = express.Router({ mergeParams: true }); //for merging that incoming params to base route i.e :bootcampId/courses to /
+ //for merging that incoming params to base route 
+ //i.e :bootcampId/courses to /
+const router = express.Router({ mergeParams: true });
 
 const advancedResults = require("../middleware/advancedResults");
 const { protect, authorize } = require("../middleware/auth");

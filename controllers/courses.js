@@ -1,37 +1,34 @@
 const ErrorResponse = require("../utils/errorResponse");
+const asyncHandler = require("../middleware/async");
 const Course = require("../models/coursemodels");
 const Bootcamp = require("../models/bootcampmodels");
 
 //route api/v1/courses (this is gonna get all the courses)
 //route GET/api/v1/bootcamps/:bootcampId/courses(this gets all the courses for the specific bootcamp)
-exports.getCourses = async (req, res, next) => {
-  try {
-    //let query;
-    if (req.params.bootcampId) {
-      const courses = Course.find({ bootcamp: req.params.bootcampId });
-      return res.status(200).json({
-        success: true,
-        count: courses.length,
-        data: courses
-      });
-    } else {
-      res.status(200).json(res.advancedResults);
-      // query = Course.find().populate({
-      //   path: "bootcamp",
-      //   select: "name description"
-      // });
-    }
-    //   const courses = await query;
-    //   res.status(200).json({
-    //     success: true,
-    //     count: courses.length,
-    //     data: courses
-    //   });
-  } catch (err) {
-    next(err);
-    console.log(err);
+exports.getCourses = asyncHandler(async (req, res, next) => {
+  //let query;
+  if (req.params.bootcampId) {
+    console.log("hello");
+    const courses = await Course.find({ bootcamp: req.params.bootcampId });
+    return res.status(200).json({
+      success: true,
+      count: courses.length,
+      data: courses
+    });
+  } else {
+    res.status(200).json(res.advancedResults);
+    // query = Course.find().populate({
+    //   path: "bootcamp",
+    //   select: "name description"
+    // });
   }
-};
+  //   const courses = await query;
+  //   res.status(200).json({
+  //     success: true,
+  //     count: courses.length,
+  //     data: courses
+  //   });
+});
 exports.getCourse = async (req, res, next) => {
   try {
     const course = await Course.findById(req.params.id).populate({
@@ -98,7 +95,7 @@ exports.updateCourse = async (req, res, next) => {
       );
     }
     //make sure user is course owner
-    if (course.UserId.toString()!== req.user.id && req.user.role !== "admin") {
+    if (course.UserId.toString() !== req.user.id && req.user.role !== "admin") {
       return next(
         new ErrorResponse(
           `User  ${req.user.id} is not authorized to update a course  ${course._id}`,

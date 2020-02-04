@@ -12,7 +12,7 @@ const advancedResults = (model, populate) => async (req, res, next) => {
   //loop over removeFields and delete them from reqQuery
   removeFields.forEach(value => delete reqQuery[value]);
 
-  console.log(reqQuery);
+  //console.log(reqQuery);
 
   //create query string
   let queryStr = JSON.stringify(reqQuery);
@@ -20,7 +20,7 @@ const advancedResults = (model, populate) => async (req, res, next) => {
   //create operators (&gt,&gte,etc)
   queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in)\b/g, match => `$${match}`);
 
-  console.log(queryStr);
+  //console.log(queryStr);
 
   //finding resource
   query = model.find(JSON.parse(queryStr));
@@ -46,7 +46,7 @@ const advancedResults = (model, populate) => async (req, res, next) => {
   const total = await model.countDocuments();
 
   query = query.skip(skip).limit(limit);
-  
+
   if (populate) {
     query = query.populate(populate);
   }
