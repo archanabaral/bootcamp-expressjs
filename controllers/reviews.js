@@ -49,6 +49,7 @@ exports.createReview = asyncHandler(async (req, res, next) => {
     success: true,
     data: review
   });
+  next(err);
 });
 
 //PUT/api/v1/reviews/:id
